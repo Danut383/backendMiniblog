@@ -5,6 +5,7 @@ const app = express();
 const authRoutes = require('./routes/auth');
 const reviewRoutes = require('./routes/reviews');
 const commentRoutes = require('./routes/comments');
+const favoriteRoutes = require('./routes/favorites');
 
 app.use(cors({
   origin: [
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/favorites', favoriteRoutes);
 
 app.get('/', (req, res) => {
   res.send('API Miniblog funcionando');
@@ -78,6 +80,20 @@ async function initializeApp() {
           CONSTRAINT "comments_pkey" PRIMARY KEY ("id"),
           CONSTRAINT "comments_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE,
           CONSTRAINT "comments_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "reviews"("id") ON DELETE CASCADE
+        );
+      `;
+      
+      await prisma.$executeRaw`
+        CREATE TABLE IF NOT EXISTS "favorites" (
+          "id" SERIAL NOT NULL,
+          "userId" INTEGER NOT NULL,
+          "movieId" INTEGER NOT NULL,
+          "movieTitle" TEXT,
+          "posterPath" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "favorites_pkey" PRIMARY KEY ("id"),
+          CONSTRAINT "favorites_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE,
+          CONSTRAINT "favorites_user_movie_unique" UNIQUE ("userId", "movieId")
         );
       `;
       
