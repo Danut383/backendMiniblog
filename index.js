@@ -28,6 +28,10 @@ app.get('/', (req, res) => {
 // Inicializar base de datos al arrancar
 async function initializeApp() {
   try {
+    // Ejecutar setup de base de datos
+    const { setupDatabase } = require('./scripts/setup-db');
+    await setupDatabase();
+    
     const { PrismaClient } = require('@prisma/client');
     const prisma = new PrismaClient();
     
@@ -37,7 +41,8 @@ async function initializeApp() {
     
     await prisma.$disconnect();
   } catch (error) {
-    console.error('❌ Error conectando a la base de datos:', error);
+    console.error('❌ Error en inicialización:', error);
+    // Continuar sin fallar la app
   }
 }
 
