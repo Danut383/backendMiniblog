@@ -25,35 +25,19 @@ app.get('/', (req, res) => {
   res.send('API Miniblog funcionando');
 });
 
-// Inicializar Prisma y base de datos al arrancar
+// Inicializar base de datos al arrancar
 async function initializeApp() {
   try {
-    // Generar cliente Prisma si no existe
-    const { execSync } = require('child_process');
-    try {
-      execSync('npx prisma generate', { stdio: 'inherit' });
-      console.log('✅ Cliente Prisma generado');
-    } catch (error) {
-      console.log('⚠️  Cliente Prisma ya existe o error menor:', error.message);
-    }
-
-    // Ejecutar db push si es necesario
-    try {
-      execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
-      console.log('✅ Base de datos sincronizada');
-    } catch (error) {
-      console.log('⚠️  Base de datos ya sincronizada o error menor:', error.message);
-    }
-
-    // Verificar conexión
     const { PrismaClient } = require('@prisma/client');
     const prisma = new PrismaClient();
+    
+    // Verificar conexión
     await prisma.$connect();
     console.log('✅ Base de datos conectada correctamente');
+    
     await prisma.$disconnect();
   } catch (error) {
-    console.error('❌ Error en inicialización:', error);
-    // No fallar la app por errores de inicialización
+    console.error('❌ Error conectando a la base de datos:', error);
   }
 }
 
