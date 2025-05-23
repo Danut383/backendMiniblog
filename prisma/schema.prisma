@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
@@ -9,33 +12,48 @@ datasource db {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  email    String    @unique
-  password String
-  name     String
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   reviews  Review[]
   comments Comment[]
+
+  @@map("users")
 }
 
 model Review {
-  id          Int       @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   title       String
   content     String
-  rating      Int
-  posterPath  String?
+  rating      Int      @default(0)
   movieId     Int
-  movieTitle  String?     // <-- Agregado aquí
+  movieTitle  String?
+  posterPath  String?
   userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  comments    Comment[]
-}
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments Comment[]
+
+  @@map("reviews")
+}
 
 model Comment {
   id       Int    @id @default(autoincrement())
   content  String
+  userId   Int
   reviewId Int
-  userId   Int?
-  review   Review @relation(fields: [reviewId], references: [id])
-  user     User?  @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
 }

@@ -7,14 +7,15 @@ WORKDIR /app
 # Copia archivos de configuración y dependencias
 COPY package*.json ./
 
-# Instala dependencias de producción
-RUN npm ci --only=production
+# Instala dependencias (incluyendo dev para Prisma)
+RUN npm ci
 
 # Copia el resto del código
 COPY . .
 
-# Genera el cliente Prisma
+# Genera el cliente Prisma y ejecuta migraciones
 RUN npx prisma generate
+RUN npx prisma migrate deploy
 
 # Crea un usuario no-root para seguridad
 RUN addgroup -g 1001 -S nodejs

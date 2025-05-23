@@ -137,13 +137,24 @@ router.get('/user/all', authenticate, async (req, res) => {
   try {
     const reviews = await prisma.review.findMany({
       where: { userId: req.userId },
-      include: { comments: true },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
     });
+    
     res.json(reviews);
-  } catch (err) {
-    res.status(500).json({ error: 'Error al obtener tus reseñas', message: err.message });
+  } catch (error) {
+    console.error('Error obteniendo reseñas del usuario:', error);
+    res.status(500).json({ 
+      error: 'Error al obtener tus reseñas',
+      message: error.message 
+    });
   }
 });
+
 // Obtener reseñas públicas de un usuario por userId (sin autenticación)
 router.get('/', async (req, res) => {
   const { userId } = req.query;
