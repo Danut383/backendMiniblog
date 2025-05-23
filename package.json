@@ -6,9 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "build": "npx prisma generate",
-    "postinstall": "npx prisma generate",
-    "deploy": "npx prisma db push --accept-data-loss"
+    "build": "npx prisma generate"
   },
   "engines": {
     "node": ">=18.0.0"
