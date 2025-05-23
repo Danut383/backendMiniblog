@@ -142,7 +142,7 @@ router.get('/user/all', authenticate, async (req, res) => {
           select: { id: true, name: true, email: true }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { id: 'desc' } // Cambiado de createdAt a id
     });
     
     res.json(reviews);

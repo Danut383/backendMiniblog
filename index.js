@@ -25,7 +25,24 @@ app.get('/', (req, res) => {
   res.send('API Miniblog funcionando');
 });
 
+// Inicializar base de datos al arrancar
+async function initializeDatabase() {
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    
+    // Verificar conexión
+    await prisma.$connect();
+    console.log('✅ Base de datos conectada correctamente');
+    
+    await prisma.$disconnect();
+  } catch (error) {
+    console.error('❌ Error conectando a la base de datos:', error);
+  }
+}
+
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
+  await initializeDatabase();
 });

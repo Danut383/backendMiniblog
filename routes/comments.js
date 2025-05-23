@@ -4,6 +4,35 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const authenticate = require('../utils/authenticate');
 
+// Obtener todos los comentarios del usuario autenticado (MOVER ANTES)
+router.get('/user/all', authenticate, async (req, res) => {
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { userId: req.userId },
+      include: {
+        review: {
+          select: { 
+            id: true, 
+            title: true, 
+            movieId: true,
+            posterPath: true,
+            movieTitle: true
+          }
+        }
+      },
+      orderBy: { id: 'desc' }
+    });
+    
+    res.json(comments);
+  } catch (error) {
+    console.error('Error obteniendo comentarios del usuario:', error);
+    res.status(500).json({ 
+      error: 'Error al obtener tus comentarios',
+      message: error.message 
+    });
+  }
+});
+
 // Obtener comentarios de una reseña
 router.get('/:reviewId', async (req, res) => {
   const { reviewId } = req.params;
@@ -33,19 +62,6 @@ router.post('/:reviewId', authenticate, async (req, res) => {
     res.status(201).json(comment);
   } catch (err) {
     res.status(500).json({ error: 'Error al crear comentario' });
-  }
-});
-
-// Obtener todos los comentarios del usuario autenticado
-router.get('/user/all', authenticate, async (req, res) => {
-  try {
-    const comments = await prisma.comment.findMany({
-      where: { userId: req.userId },
-      include: { review: true }
-    });
-    res.json(comments);
-  } catch (err) {
-    res.status(500).json({ error: 'Error al obtener tus comentarios' });
   }
 });
 
