@@ -13,9 +13,8 @@ RUN npm ci
 # Copia el resto del código
 COPY . .
 
-# Genera el cliente Prisma y ejecuta migraciones
+# Genera el cliente Prisma
 RUN npx prisma generate
-RUN npx prisma migrate deploy
 
 # Crea un usuario no-root para seguridad
 RUN addgroup -g 1001 -S nodejs
@@ -28,5 +27,5 @@ USER nodejs
 # Expone el puerto
 EXPOSE 4000
 
-# Comando para correr tu app
-CMD ["npm", "start"]
+# Script que ejecuta migraciones y luego inicia la app
+CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
