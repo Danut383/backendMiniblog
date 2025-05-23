@@ -6,7 +6,15 @@ const authRoutes = require('./routes/auth');
 const reviewRoutes = require('./routes/reviews');
 const commentRoutes = require('./routes/comments');
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://cinemablog-frontend.onrender.com',
+    /\.onrender\.com$/
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
