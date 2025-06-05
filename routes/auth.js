@@ -29,8 +29,23 @@ router.post('/login', async (req, res) => {
     if (!user) return res.status(400).json({ error: 'Credenciales inválidas' });
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: 'Credenciales inválidas' });
+    
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+    
+    // 🍪 COOKIES SEGURAS: Configurar cookie HttpOnly y Secure
+    const cookieOptions = {
+      httpOnly: true, // Previene acceso desde JavaScript (XSS)
+      secure: process.env.NODE_ENV === 'production', // HTTPS en producción
+      sameSite: 'strict', // Protección CSRF
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+    };
+    
+    res.cookie('auth_token', token, cookieOptions);
+    res.json({ 
+      token, // También enviamos en response para compatibilidad
+      user: { id: user.id, email: user.email, name: user.name },
+      message: 'Login exitoso con cookie segura'
+    });
   } catch (err) {
     res.status(500).json({ error: 'Error en el login' });
   }
@@ -49,6 +64,18 @@ router.get('/user/:userId', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener usuario' });
   }
+});
+
+// Logout seguro
+router.post('/logout', (req, res) => {
+  // Limpiar cookie de autenticación
+  res.clearCookie('auth_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  
+  res.json({ message: 'Logout exitoso' });
 });
 
 module.exports = router;

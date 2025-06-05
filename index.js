@@ -1,11 +1,61 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
+const securityLogger = require('./utils/securityLogger');
 const app = express();
 const authRoutes = require('./routes/auth');
 const reviewRoutes = require('./routes/reviews');
 const commentRoutes = require('./routes/comments');
 const favoriteRoutes = require('./routes/favorites');
+
+// 🛡️ CONFIGURACIÓN DE SEGURIDAD
+// Headers de seguridad con Helmet.js
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      scriptSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.themoviedb.org"]
+    }
+  },
+  crossOriginEmbedderPolicy: false // Para permitir imágenes externas
+}));
+
+// Rate limiting para prevenir ataques de fuerza bruta
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 requests por ventana
+  message: {
+    error: 'Demasiadas solicitudes desde esta IP, intenta más tarde.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting específico para autenticación
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // máximo 5 intentos de login por ventana
+  message: {
+    error: 'Demasiados intentos de login, intenta más tarde.'
+  },
+  skipSuccessfulRequests: true
+});
+
+app.use(limiter);
+app.use('/api/auth', authLimiter);
+
+// Security logging
+app.use(securityLogger);
+
+// Cookie parser para cookies seguras
+app.use(cookieParser());
 
 app.use(cors({
   origin: [
